@@ -13,17 +13,32 @@
   And you put xdescribe instead of describe if you want to suspend running the unit tests.  
 */
 
+// function insertionSort(nums) {
+// 	for (let i = 1; i < nums.length; i++) {
+// 		for (let j = i; j > 0; j--) {
+// 			if (nums[j] < nums[j - 1]) {
+// 				let buff = nums[j];
+// 				nums[j] = nums[j - 1];
+// 				nums[j - 1] = buff;
+// 			} else {
+// 				break;
+// 			}
+// 		}
+// 	}
+
+// 	return nums;
+// }
+
 function insertionSort(nums) {
 	for (let i = 1; i < nums.length; i++) {
-		for (let j = i; j > 0; j--) {
-			if (nums[j] < nums[j - 1]) {
-				let buff = nums[j];
-				nums[j] = nums[j - 1];
-				nums[j - 1] = buff;
-			} else {
-				break;
-			}
+		let temp = nums[i];
+		let j;
+
+		for (j = i - 1; j >= 0 && nums[j] > temp; j--) {
+			nums[j + 1] = nums[j];
 		}
+
+		nums[j + 1] = temp;
 	}
 
 	return nums;
