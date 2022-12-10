@@ -24,32 +24,96 @@
   }
 */
 const { getUser } = require("./jobs");
+// getUser(id) -> will get back user obj
 
+// 1 degree of separation - people I am connected to
+// 2 degree of sep - people I'm connected to and people they are connected to
 const findMostCommonTitle = (myId, degreesOfSeparation) => {
-  // code goes here
+	// add myself to a queue
+	let queue = [myId];
+	const seen = new Set(queue);
+	const jobs = {};
+
+	for (let i = 0; i <= degreesOfSeparation; i++) {
+		const newQueue = [];
+
+		while (queue.length) {
+			// pull 1st uder off
+			const user = getUser(queue.shift());
+
+			// queue up the next level of connections
+			// this loop determines how many degrees breadth first traversal I'll do on my connections
+			for (let j = 0; j < user.connections.length; j++) {
+				const connection = user.connections[j];
+
+				if (!seen.has(connection)) {
+					newQueue.push(connection);
+					seen.add(connection);
+				}
+			}
+
+			// if I've seen job title before, if it already exists
+			// if it's 2, i wanna make it 3, if not seen before - make it 1
+			jobs[user.title] = jobs[user.title] ? jobs[user.title] + 1 : 1;
+		}
+
+		queue = newQueue;
+	}
+
+	// now I ended up with obj like this:
+	// {
+	// "Program Manager" : 3
+	// "Designer" : 3
+	//}
+	// and I need to turn it into smth like sorted list
+
+	// get an array of all the keys
+	const jobKeys = Object.keys(jobs);
+
+	let biggestNumber = jobs[jobKeys[0]];
+	let jobName = jobKeys[0];
+
+	for (let i = 1; i < jobKeys.length; i++) {
+		const currentJob = jobKeys[i];
+
+		if (jobs[currentJob] > biggestNumber) {
+			jobName = currentJob;
+			biggestNumber = jobs[currentJob];
+		}
+	}
+
+	// see all job titles, sorted
+	// jobKeys
+	//   .map((id) => [id, jobs[id]])
+	//   .sort((a, b) => b[1] - a[1])
+	//   .slice(0, 10)
+	//   .forEach(([job, num]) => console.log(`${num} – ${job}`));
+	// console.log("======");
+
+	return jobName;
 };
 
 // unit tests
 // do not modify the below code
-test.skip("findMostCommonTitle", function () {
-  // the getUser function and data comes from this CodePen: https://codepen.io/btholt/pen/NXJGwa?editors=0010
-  test("user 30 with 2 degrees of separation", () => {
-    expect(findMostCommonTitle(30, 2)).toBe("Librarian");
-  });
+describe("findMostCommonTitle", function () {
+	// the getUser function and data comes from this CodePen: https://codepen.io/btholt/pen/NXJGwa?editors=0010
+	test("user 30 with 2 degrees of separation", () => {
+		expect(findMostCommonTitle(30, 2)).toBe("Librarian");
+	});
 
-  test("user 11 with 3 degrees of separation", () => {
-    expect(findMostCommonTitle(11, 3)).toBe("Graphic Designer");
-  });
+	test("user 11 with 3 degrees of separation", () => {
+		expect(findMostCommonTitle(11, 3)).toBe("Graphic Designer");
+	});
 
-  test("user 307 with 4 degrees of separation", () => {
-    // if you're failing here with "Clinical Specialist, you're probably not filtering users who
-    // appear more than once in people's connections
-    expect(findMostCommonTitle(306, 4)).toBe("Pharmacist");
-  });
+	test("user 307 with 4 degrees of separation", () => {
+		// if you're failing here with "Clinical Specialist, you're probably not filtering users who
+		// appear more than once in people's connections
+		expect(findMostCommonTitle(306, 4)).toBe("Pharmacist");
+	});
 });
 
-test.skip("extra credit", function () {
-  test("user 1 with 7 degrees of separation – this will traverse every user that's followed by someone else. five users are unfollowed", () => {
-    expect(findMostCommonTitle(1, 7)).toBe("Geological Engineer");
-  });
+describe("extra credit", function () {
+	test("user 1 with 7 degrees of separation – this will traverse every user that's followed by someone else. five users are unfollowed", () => {
+		expect(findMostCommonTitle(1, 7)).toBe("Geological Engineer");
+	});
 });
